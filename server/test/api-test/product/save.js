@@ -1,11 +1,11 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const chaiHttp = require('chai-http');
-const server = require('../server');
-const { Product: ProductService } = require('../../services');
+const server = require('../../server');
+const { Product: ProductService } = require('../../../services');
 const {
-  AUTHORIZATION, PUBLIC_ID, SAVE_PRODUCT_PAYLOAD, SAVE_PRODUCT_INVALID_PAYLOAD,
-} = require('../constant');
+  PUBLIC_ID, SAVE_PRODUCT_PAYLOAD, SAVE_PRODUCT_INVALID_PAYLOAD,
+} = require('../../constant');
 
 const { expect } = chai;
 

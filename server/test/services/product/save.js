@@ -5,8 +5,8 @@ const { SAVE_PRODUCT_PAYLOAD } = require('../../constant');
 
 const { expect } = chai;
 
-describe('Product service', () => {
-  context('save method success case', () => {
+describe('Product service save method', () => {
+  context('test cases for success case', () => {
     before(async () => {
       await ProductModel.create({ ...SAVE_PRODUCT_PAYLOAD, public_id: 'ac9aceb0-5b57-11e9-8094-7acbf9f844e6' });
     });
@@ -27,7 +27,7 @@ describe('Product service', () => {
     });
   });
 
-  context('save method failre case', () => {
+  context('test cases for failre case', () => {
     before(async () => {
       await ProductModel.create({ ...SAVE_PRODUCT_PAYLOAD, public_id: 'ac9aceb0-5b57-11e9-8094-7acbf9f844e6' });
     });
@@ -45,7 +45,7 @@ describe('Product service', () => {
     it('should return error for duplicate entry with name and message key.', async () => {
       const { errors } = await ProductService.save(SAVE_PRODUCT_PAYLOAD);
 
-      expect(errors[0]).to.have.all.key('name', 'message');
+      expect(errors[0]).to.have.all.keys('name', 'message');
     });
   });
 });
