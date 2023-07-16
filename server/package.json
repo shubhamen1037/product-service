@@ -1,0 +1,25 @@
+{
+  "name": "electronic-store-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "NODE_ENV=prod node_modules/.bin/sequelize-cli db:migrate && node server.js",
+    "test": "NODE_ENV=test node_modules/.bin/sequelize-cli db:migrate && npm-run-all --silent test-*"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "ajv-errors": "^3.0.0",
+    "ajv-formats": "^2.1.1",
+    "ajv-keywords": "^5.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "helmet": "^7.0.0",
+    "lodash.snakecase": "^4.1.1",
+    "sequelize": "^6.32.1",
+    "sequelize-cli": "^6.6.1",
+    "smart-node-logger": "^1.3.0"
+  }
+}
