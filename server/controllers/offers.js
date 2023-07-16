@@ -5,9 +5,9 @@ const Validator = require('../utils/validator');
 
 const save = async (req, res) => {
   try {
-    const { body, params:{ productId } } = req;
+    const { body, params: { productId } } = req;
 
-    const data = { ...body, productId }
+    const data = { ...body, productId };
 
     const { errors: validationErrors, data: validData } = Validator.isSchemaValid({ data, schema: saveSchema });
 
@@ -18,7 +18,6 @@ const save = async (req, res) => {
     const { errors, doc } = await OfferService.save(validData);
 
     if (doc) {
-
       const { publicId } = doc;
 
       res.set('message', 'Successfully saved.');
@@ -29,15 +28,15 @@ const save = async (req, res) => {
 
     return res.status(400).json({ error: errors });
   } catch (error) {
-    return res.status(500).json({ error: [{ message: 'Internal Server Error'}]} );
+    return res.status(500).json({ error: [ { message: 'Internal Server Error' } ] });
   }
 };
 
 const update = async (req, res) => {
   try {
-    const { body, params: { publicId },headers: {'concurrency-stamp': concurrencyStamp}  } = req;
+    const { body, params: { publicId }, headers: { 'concurrency-stamp': concurrencyStamp } } = req;
 
-    const data = { ...body, publicId , concurrencyStamp}
+    const data = { ...body, publicId, concurrencyStamp };
 
     const { errors: validationErrors, data: validData } = Validator.isSchemaValid({ data, schema: updateSchema });
 
@@ -48,9 +47,6 @@ const update = async (req, res) => {
     const { errors, doc } = await OfferService.update(validData);
 
     if (doc) {
-
-      const { publicId } = doc;
-
       res.set('message', 'Successfully updated.');
       res.set('public-id', publicId);
 
@@ -59,7 +55,7 @@ const update = async (req, res) => {
 
     return res.status(400).json({ error: errors });
   } catch (error) {
-    return res.status(500).json({ error: [{ message: 'Internal Server Error'}]} );
+    return res.status(500).json({ error: [ { message: 'Internal Server Error' } ] });
   }
 };
 
@@ -70,10 +66,10 @@ const getDetailById = async (req, res) => {
     const isValid = Validator.isValidUuid(publicId);
 
     if (!isValid) {
-      return res.status(400).json({ error: [{ message: 'Invalid product-id!' }]});
+      return res.status(400).json({ error: [ { message: 'Invalid product-id!' } ] });
     }
 
-    const { errors, doc } = await OfferService.getDetailById({publicId});
+    const { errors, doc } = await OfferService.getDetailById({ publicId });
 
     if (doc) {
       return res.status(200).json(doc);
@@ -81,7 +77,7 @@ const getDetailById = async (req, res) => {
 
     return res.status(400).json({ error: errors });
   } catch (error) {
-    return res.status(500).json({ error: [{ message: 'Internal Server Error'}]} );
+    return res.status(500).json({ error: [ { message: 'Internal Server Error' } ] });
   }
 };
 
@@ -97,7 +93,7 @@ const getList = async (req, res) => {
 
     const { errors, count, doc } = await OfferService.getList({ ...data, limit, offset });
 
-    if(doc){
+    if (doc) {
       res.setHeader('page-limit', limit);
       res.setHeader('total-records', count);
 
@@ -106,7 +102,7 @@ const getList = async (req, res) => {
 
     return res.status(400).json({ error: errors });
   } catch (error) {
-    return res.status(500).json({ error: [{ message: 'Internal Server Error'}]} );
+    return res.status(500).json({ error: [ { message: 'Internal Server Error' } ] });
   }
 };
 

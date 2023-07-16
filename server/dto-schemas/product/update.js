@@ -27,11 +27,11 @@ const update = {
     price: {
       type: 'number',
     },
-    isDeleted:{
+    isDeleted: {
       type: 'boolean',
-    }
+    },
   },
-  required: [ 'publicId',  'concurrencyStamp' ],
+  required: [ 'publicId', 'concurrencyStamp' ],
   errorMessage: {
     required: {
       publicId: 'Parameter: publicId is required.',

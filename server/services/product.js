@@ -1,6 +1,6 @@
 const { v1: uuidV1 } = require('uuid');
 const moment = require('moment');
-const { product: ProductModel, offer: OfferModel, Sequelize: { Op }} = require('../database');
+const { product: ProductModel, offer: OfferModel, Sequelize: { Op } } = require('../database');
 const Helper = require('../utils/helper');
 
 const save = async (payload) => {
@@ -14,10 +14,12 @@ const save = async (payload) => {
     });
 
     if (isDuplicateProduct) {
-      return { errors: [ { name: 'sku', message: `Duplicate SKU entry` } ] };
+      return { errors: [ { name: 'sku', message: 'Duplicate SKU entry' } ] };
     }
 
-    await ProductModel.create({ public_id: publicId, name, sku, price });
+    await ProductModel.create({
+      public_id: publicId, name, sku, price,
+    });
 
     return { doc: { publicId, message: 'successfully stored.' } };
   } catch (err) {
@@ -30,23 +32,24 @@ const update = async (payload) => {
 
   try {
     const reponse = await ProductModel.findOne({
-      where: { public_id: publicId},
+      where: { public_id: publicId },
     });
 
     if (!reponse) {
-      return { errors: [ { name: 'product', message: `Invalid product id` } ] };
+      return { errors: [ { name: 'product', message: 'Invalid product id' } ] };
     }
 
-    const { dataValues: { concurrency_stamp: storedConcurrencyStamp}} = reponse;
+    const { dataValues: { concurrency_stamp: storedConcurrencyStamp } } = reponse;
 
-    if (concurrencyStamp != storedConcurrencyStamp) {
+    if (concurrencyStamp !== storedConcurrencyStamp) {
       return { errors: [ { name: 'concurrency-stamp', message: 'InValid concurrency stamp.' } ] };
     }
 
     const newConcurrencyStamp = uuidV1();
 
-    await ProductModel.update(Helper.convertCamelToSnake({ ...data, concurrency_stamp: newConcurrencyStamp }),  
-      { where: { public_id: publicId } }
+    await ProductModel.update(
+      Helper.convertCamelToSnake({ ...data, concurrency_stamp: newConcurrencyStamp }),
+      { where: { public_id: publicId } },
     );
 
     return { doc: { publicId, message: 'Successfully updated.' } };
@@ -61,16 +64,16 @@ const getList = async (payload) => {
   const response = await ProductModel.findAndCountAll({
     limit,
     offset,
-    attributes: [ 'public_id','concurrency_stamp', 'name', 'sku', 'price', 'created_at', 'updated_at' ],
-    where: { is_deleted: false }, 
-    order: [['id', 'DESC']],
-    include: [{
-        order: [ 'id', 'desc' ],
-        model: OfferModel,
-        attributes: [ 'public_id', 'concurrency_stamp', 'title', 'discription', 'start_date', 'end_date', 'rule', 'created_at', 'updated_at' ],
-        where: { is_expired: false, is_deleted: false },
-        required: false,
-      }],
+    attributes: [ 'public_id', 'concurrency_stamp', 'name', 'sku', 'price', 'created_at', 'updated_at' ],
+    where: { is_deleted: false },
+    order: [ [ 'id', 'DESC' ] ],
+    include: [ {
+      order: [ 'id', 'desc' ],
+      model: OfferModel,
+      attributes: [ 'public_id', 'concurrency_stamp', 'title', 'discription', 'start_date', 'end_date', 'rule', 'created_at', 'updated_at' ],
+      where: { is_expired: false, is_deleted: false },
+      required: false,
+    } ],
   });
 
   if (response) {
@@ -88,20 +91,19 @@ const getList = async (payload) => {
   return { count: 0, doc: [] };
 };
 
-
 const getDetailById = async (payload) => {
   const { publicId } = payload;
 
   const response = await ProductModel.findOne({
-    attributes: [ 'public_id','concurrency_stamp', 'name', 'sku', 'price', 'created_at', 'updated_at' ],
-    where: { public_id: publicId, is_deleted: false }, 
-    include: [{
-        order: [ 'id', 'desc' ],
-        model: OfferModel,
-        attributes: [ 'public_id', 'concurrency_stamp', 'title', 'discription', 'start_date', 'end_date', 'rule', 'created_at', 'updated_at' ],
-        where: { is_expired: false, is_deleted: false },
-        required: false,
-      }],
+    attributes: [ 'public_id', 'concurrency_stamp', 'name', 'sku', 'price', 'created_at', 'updated_at' ],
+    where: { public_id: publicId, is_deleted: false },
+    include: [ {
+      order: [ 'id', 'desc' ],
+      model: OfferModel,
+      attributes: [ 'public_id', 'concurrency_stamp', 'title', 'discription', 'start_date', 'end_date', 'rule', 'created_at', 'updated_at' ],
+      where: { is_expired: false, is_deleted: false },
+      required: false,
+    } ],
   });
 
   if (response) {
@@ -111,98 +113,110 @@ const getDetailById = async (payload) => {
     return { doc };
   }
 
-  return { doc : {} };
+  return { doc: {} };
 };
 
 const checkout = async (payload) => {
   const { products } = payload;
-  
+
   try {
-    let errors = [];
-    let productPriceDetails = [];
+    const errors = [];
+    const productPriceDetails = [];
     const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
-   
-    await Promise.all(products.map(async(data)=>{
+
+    await Promise.all(products.map(async (data) => {
       const { productId, quantity } = data;
       let totalPrice = 0;
       let totalDiscountedPrice = 0;
 
-      const productResponse =  await ProductModel.findOne({
-        attributes: [ 'public_id','concurrency_stamp', 'name', 'sku', 'price', 'created_at', 'updated_at' ],
-        where: { public_id: productId, is_deleted: false }, 
-        include: [{
-            order: [ 'id', 'desc' ],
-            model: OfferModel,
-            attributes: [ 'public_id', 'concurrency_stamp', 'title', 'discription', 'start_date', 'end_date', 'rule', 'created_at', 'updated_at' ],
-            where: { 
-              start_date: { [Op.lt]: currentDateTime},
-              end_date: { [Op.gt]: currentDateTime},
-              is_expired: false, 
-              is_deleted: false ,
-            },
-            required: false,
-          }],
+      const productResponse = await ProductModel.findOne({
+        attributes: [ 'public_id', 'concurrency_stamp', 'name', 'sku', 'price', 'created_at', 'updated_at' ],
+        where: { public_id: productId, is_deleted: false },
+        include: [ {
+          order: [ 'id', 'desc' ],
+          model: OfferModel,
+          attributes: [ 'public_id', 'concurrency_stamp', 'title', 'discription', 'start_date', 'end_date', 'rule', 'created_at', 'updated_at' ],
+          where: {
+            start_date: { [Op.lt]: currentDateTime },
+            end_date: { [Op.gt]: currentDateTime },
+            is_expired: false,
+            is_deleted: false,
+          },
+          required: false,
+        } ],
       });
 
-      if(!productResponse){
-        errors.push({ name: 'product-id', message: `productId ${productId} is invalid`})
+      if (!productResponse) {
+        errors.push({ name: 'product-id', message: `productId ${productId} is invalid` });
       }
 
-      const { dataValues:{ price: actualPrice, name, sku, offers}} = productResponse;
+      const {
+        dataValues: {
+          price: actualPrice, name, sku, offers,
+        },
+      } = productResponse;
 
-      let discountPricePerProduct  = actualPrice;
+      let discountPricePerProduct = actualPrice;
 
       totalPrice += actualPrice * quantity;
       totalDiscountedPrice += discountPricePerProduct * quantity;
       let minQuantityOnOfferAvailable;
-      let pricingRule = {}
+      let pricingRule = {};
 
-      if(offers.length > 0){
+      if (offers.length > 0) {
+        const { dataValues: { rule } } = offers[0];
 
-        const { dataValues: { rule }} = offers[0];
+        const {
+          price, quantity: quantityOnDiscountAvailable, maxDiscountLimit, minQuantityLimit,
+        } = rule;
 
-        const { price, quantity: quantityOnDiscountAvailable, maxDiscountLimit, minQuantityLimit} = rule;
-        
-        discountPricePerProduct = price/quantityOnDiscountAvailable;
+        discountPricePerProduct = price / quantityOnDiscountAvailable;
         pricingRule = rule;
         let totalQuantityOnDiscountNotAvailable = quantity % quantityOnDiscountAvailable;
-        
-        
-        if(minQuantityLimit && minQuantityLimit >  quantity ){
+
+        if (minQuantityLimit && minQuantityLimit > quantity) {
           totalQuantityOnDiscountNotAvailable = quantity;
         }
-        
+
         const totalQuantityOnDiscountAvailable = (quantity - totalQuantityOnDiscountNotAvailable);
+
         totalDiscountedPrice = (totalQuantityOnDiscountAvailable * discountPricePerProduct) + (totalQuantityOnDiscountNotAvailable * actualPrice);
-        minQuantityOnOfferAvailable = minQuantityLimit || quantityOnDiscountAvailable ;
+        minQuantityOnOfferAvailable = minQuantityLimit || quantityOnDiscountAvailable;
 
         const isMaxDiscountLimitExeeded = maxDiscountLimit && (totalPrice - totalDiscountedPrice) > maxDiscountLimit;
 
-        if(isMaxDiscountLimitExeeded ){
+        if (isMaxDiscountLimitExeeded) {
           totalDiscountedPrice = totalPrice - maxDiscountLimit;
         }
       }
 
       productPriceDetails.push({
-        name, sku, pricePerProduct: actualPrice, quantity, totalPrice: (actualPrice * quantity), 
-        totalDiscountedPrice, minQuantityOnOfferAvailable, discountPricePerProduct, pricingRule
+        name,
+        sku,
+        pricePerProduct: actualPrice,
+        quantity,
+        totalPrice: (actualPrice * quantity),
+        totalDiscountedPrice,
+        minQuantityOnOfferAvailable,
+        discountPricePerProduct,
+        pricingRule,
       });
-    }))
+    }));
 
-    if(errors.length >0){
-      return { errors}
+    if (errors.length > 0) {
+      return { errors };
     }
-    
-    return { doc: { products: productPriceDetails }}
+
+    return { doc: { products: productPriceDetails } };
   } catch (err) {
     return { errors: [ { name: 'save-product', message: 'Something went wrong.' } ] };
   }
 };
-  
+
 module.exports = {
   save,
   getList,
   update,
   getDetailById,
-  checkout
+  checkout,
 };

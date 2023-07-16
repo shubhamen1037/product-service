@@ -1,8 +1,6 @@
 /* eslint-disable no-mixed-operators */
 const convertCamelCase = require('lodash.camelcase');
 const convertSnakeCase = require('lodash.snakecase');
-const axios = require('axios');
-const Logger = require('smart-node-logger');
 
 const convertCamelObjectToSnake = (payload) => {
   const obj = { ...payload };
@@ -124,58 +122,6 @@ const convertKababToNormal = (payload) => {
   }
 };
 
-const postRequest = async ({
-  url, data, headers, params, auth, httpsAgent,
-}) => {
-  try {
-    const response = await axios({
-      url,
-      method: 'post',
-      data,
-      params,
-      auth,
-      httpsAgent,
-      headers: headers || {
-        'cache-control': 'no-cache',
-      },
-    });
-
-    return response;
-  } catch (error) {
-    const { request } = error;
-    const logger = new Logger(request);
-
-    const { response: { status, statusText, data: responseData } } = error.response
-      ? error : { response: { status: 500, statusText: error.message, data: error.stack } };
-
-    logger.log({ meta: { details: { status, statusText, response: responseData } } });
-
-    return { status, errors: [ { name: 'server', message: 'There is some issue, Please try after some time' } ] };
-  }
-};
-
-const getRequest = async ({ url, headers }) => {
-  try {
-    const response = await axios({
-      url,
-      method: 'get',
-      headers,
-    });
-
-    return response;
-  } catch (error) {
-    const { request } = error;
-    const logger = new Logger(request);
-
-    const { response: { status, statusText, data: responseData } } = error.response
-      ? error : { response: { status: 500, statusText: error.message, data: error.stack } };
-
-    logger.log({ meta: { details: { status, statusText, response: responseData } } });
-
-    return { status, errors: [ { name: 'server', message: 'There is some issue, Please try after some time' } ] };
-  }
-};
-
 const sanitizeStr = (regex, str, data) => {
   const sanitizedStr = str.replace(regex, data);
 
@@ -188,7 +134,5 @@ module.exports = {
   convertSnakeObjectToCamel,
   convertSnakeToCamel,
   convertKababToNormal,
-  postRequest,
-  getRequest,
-  sanitizeStr
+  sanitizeStr,
 };

@@ -3,8 +3,8 @@ const cors = require('cors');
 const compression = require('compression');
 const helmet = require('helmet');
 
-const routes = require('./routes');
-const { PORT } = require('./config');
+const routes = require('../routes');
+const { PORT } = require('../config');
 
 const app = express();
 const server = app.listen(PORT);
@@ -20,7 +20,6 @@ try {
     extended: true,
   }));
   app.use(express.json());
-  // app.use( Authentication());
   app.use('/', routes);
 } catch (e) {
   server.close();

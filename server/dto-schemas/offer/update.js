@@ -25,17 +25,17 @@ const update = {
       description: 'description of offer',
       minLength: 2,
     },
-    startDate:{
+    startDate: {
       type: 'string',
       description: 'startDate of offer',
       format: 'date-time',
     },
-    endDate:{
+    endDate: {
       type: 'string',
       description: 'endDate of offer',
       format: 'date-time',
     },
-    rule:{
+    rule: {
       type: 'object',
       properties: {
         quantity: {
@@ -46,11 +46,11 @@ const update = {
           type: 'number',
           description: 'price of total product',
         },
-        minQuantityLimit:{
+        minQuantityLimit: {
           type: 'number',
           description: 'minimum number of perticular product on which offer is applicable',
         },
-        maxDiscountLimit:{
+        maxDiscountLimit: {
           type: 'number',
           description: 'maximum discount limit',
         },
@@ -65,14 +65,14 @@ const update = {
       },
       additionalProperties: false,
     },
-    isDeleted:{
+    isDeleted: {
       type: 'boolean',
     },
-    isExpired:{
+    isExpired: {
       type: 'boolean',
-    }
+    },
   },
-  required: [ 'publicId', 'concurrencyStamp'],
+  required: [ 'publicId', 'concurrencyStamp' ],
   errorMessage: {
     required: {
       publicId: 'Parameter: publicId is required in body.',

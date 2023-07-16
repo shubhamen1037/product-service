@@ -20,17 +20,17 @@ const save = {
       description: 'description of offer',
       minLength: 2,
     },
-    startDate:{
+    startDate: {
       type: 'string',
       description: 'startDate of offer',
       format: 'date-time',
     },
-    endDate:{
+    endDate: {
       type: 'string',
       description: 'endDate of offer',
       format: 'date-time',
     },
-    rule:{
+    rule: {
       type: 'object',
       properties: {
         quantity: {
@@ -41,11 +41,11 @@ const save = {
           type: 'number',
           description: 'price of total product',
         },
-        minQuantityLimit:{
+        minQuantityLimit: {
           type: 'number',
           description: 'minimum number of product on which offer is applicable',
         },
-        maxDiscountLimit:{
+        maxDiscountLimit: {
           type: 'number',
           description: 'maximum discount limit',
         },
@@ -71,10 +71,10 @@ const save = {
     required: {
       productId: 'Parameter: publicId is required in body.',
       title: 'Parameter: title is required in body.',
-      discription:  'Parameter: discription is required in body.',
-      startDate:  'Parameter: startDate is required in body.',
-      endDate:  'Parameter: endDate is required in body.',
-      rule:  'Parameter: rule is required in body.',
+      discription: 'Parameter: discription is required in body.',
+      startDate: 'Parameter: startDate is required in body.',
+      endDate: 'Parameter: endDate is required in body.',
+      rule: 'Parameter: rule is required in body.',
     },
     properties: {
       productId: 'Parameter: productId should be valid uuid.',

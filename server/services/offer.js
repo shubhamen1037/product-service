@@ -1,11 +1,10 @@
 /* eslint-disable max-lines */
 const { v1: uuidV1 } = require('uuid');
-const { product: ProductModel, offer: OfferModel, Sequelize: { Op }} = require('../database');
+const { product: ProductModel, offer: OfferModel } = require('../database');
 const Helper = require('../utils/helper');
-const { OFFER_STATUS } = require('../utils/constant');
 
 const save = async (payload) => {
-  const {  productId, ...data } = payload;
+  const { productId, ...data } = payload;
 
   const publicId = uuidV1();
 
@@ -16,12 +15,12 @@ const save = async (payload) => {
     });
 
     if (!response) {
-      return { errors: [ { name: 'product-id', message: `Invalid product Id` } ] };
+      return { errors: [ { name: 'product-id', message: 'Invalid product Id' } ] };
     }
 
-    const { dataValues: { id: productUniqueId }} = response;
+    const { dataValues: { id: productUniqueId } } = response;
 
-    const doc = Helper.convertCamelToSnake({...data, publicId, productId: productUniqueId});
+    const doc = Helper.convertCamelToSnake({ ...data, publicId, productId: productUniqueId });
 
     await OfferModel.create(doc);
 
@@ -32,26 +31,26 @@ const save = async (payload) => {
 };
 
 const update = async (payload) => {
-const { publicId, concurrencyStamp, ...data } = payload;
+  const { publicId, concurrencyStamp, ...data } = payload;
 
   try {
     const reponse = await OfferModel.findOne({
-      where: { public_id: publicId},
+      where: { public_id: publicId },
     });
 
     if (!reponse) {
-      return { errors: [ { name: 'offer', message: `Invalid offer id` } ] };
+      return { errors: [ { name: 'offer', message: 'Invalid offer id' } ] };
     }
 
-    const { dataValues: { concurrency_stamp: storedConcurrencyStamp}} = reponse;
+    const { dataValues: { concurrency_stamp: storedConcurrencyStamp } } = reponse;
 
-    if (concurrencyStamp != storedConcurrencyStamp) {
+    if (concurrencyStamp !== storedConcurrencyStamp) {
       return { errors: [ { name: 'concurrency-stamp', message: 'InValid concurrency stamp.' } ] };
     }
 
     const newConcurrencyStamp = uuidV1();
 
-    const doc = Helper.convertCamelToSnake({ ...data, concurrencyStamp: newConcurrencyStamp});
+    const doc = Helper.convertCamelToSnake({ ...data, concurrencyStamp: newConcurrencyStamp });
 
     await OfferModel.update(doc, { where: { public_id: publicId } });
 
@@ -69,21 +68,19 @@ const getList = async (payload) => {
     offset,
     attributes: [ 'public_id', 'concurrency_stamp', 'title', 'discription', 'start_date', 'end_date', 'rule', 'created_at', 'updated_at' ],
     where: { is_expired: false, is_deleted: false },
-    order: [['id', 'DESC']],
-    include: [{
-        order: [ 'id', 'desc' ],
-        model: ProductModel,
-        attributes: [ 'public_id','concurrency_stamp', 'name', 'sku', 'price', 'created_at', 'updated_at' ],
-        where: { is_deleted: false }, 
-      }],
+    order: [ [ 'id', 'DESC' ] ],
+    include: [ {
+      order: [ 'id', 'desc' ],
+      model: ProductModel,
+      attributes: [ 'public_id', 'concurrency_stamp', 'name', 'sku', 'price', 'created_at', 'updated_at' ],
+      where: { is_deleted: false },
+    } ],
   });
 
   if (response) {
     const { count, rows } = response;
 
-    const doc = rows.map(({ dataValues }) => {
-      return Helper.convertSnakeToCamel(dataValues);
-    });
+    const doc = rows.map(({ dataValues }) => Helper.convertSnakeToCamel(dataValues));
 
     return { doc, count };
   }
@@ -91,19 +88,18 @@ const getList = async (payload) => {
   return { count: 0, doc: [] };
 };
 
-
 const getDetailById = async (payload) => {
   const { publicId } = payload;
 
   const response = await OfferModel.findOne({
     attributes: [ 'public_id', 'concurrency_stamp', 'title', 'discription', 'start_date', 'end_date', 'rule', 'created_at', 'updated_at' ],
-    where: { public_id: publicId }, 
-    include: [{
-        model: ProductModel,
-        attributes: [ 'public_id','concurrency_stamp', 'name', 'sku', 'price', 'created_at', 'updated_at' ],
-        where: { is_deleted: false },
-        required: false, 
-      }],
+    where: { public_id: publicId },
+    include: [ {
+      model: ProductModel,
+      attributes: [ 'public_id', 'concurrency_stamp', 'name', 'sku', 'price', 'created_at', 'updated_at' ],
+      where: { is_deleted: false },
+      required: false,
+    } ],
   });
 
   if (response) {
@@ -113,7 +109,7 @@ const getDetailById = async (payload) => {
     return { doc };
   }
 
-  return { doc : {} };
+  return { doc: {} };
 };
 
 module.exports = {
