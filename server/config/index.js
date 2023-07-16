@@ -7,9 +7,9 @@ module.exports = {
   HOST: process.env.HOST || '0.0.0.0',
   PORT: process.env.PORT || 3000,
   DATABASE: {
-    name: process.env.DB_NAME || 'store_service',
-    username: process.env.DB_USER_NAME || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
+    name: process.env.DB_NAME,
+    username: process.env.DB_USER_NAME,
+    password: process.env.DB_PASSWORD,
     options: {
       host: process.env.DB_HOST,
       port: process.env.DB_PORT || 5432,
