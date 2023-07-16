@@ -45,10 +45,6 @@ const save = {
           type: 'number',
           description: 'minimum number of product on which offer is applicable',
         },
-        maxQuantityLimit:{
-          type: 'number',
-          description: 'maximum number of product on which offer is applicable',
-        },
         maxDiscountLimit:{
           type: 'number',
           description: 'maximum discount limit',
@@ -64,7 +60,6 @@ const save = {
           quantity: 'Parameter: quantity should be valid uuid.',
           price: 'Parameter: price should be valid uuid.',
           minQuantityLimit: 'Parameter: minQuantityLimit should be valid uuid.',
-          maxQuantityLimit: 'Parameter: maxQuantityLimit should be valid uuid.',
           maxDiscountLimit: 'Parameter: maxDiscountLimit should be valid uuid.',
         },
       },

@@ -50,10 +50,6 @@ const update = {
           type: 'number',
           description: 'minimum number of perticular product on which offer is applicable',
         },
-        maxQuantityLimit:{
-          type: 'number',
-          description: 'maximum number of perticular product on which offer is applicable',
-        },
         maxDiscountLimit:{
           type: 'number',
           description: 'maximum discount limit',
@@ -64,12 +60,17 @@ const update = {
           quantity: 'Parameter: quantity should be valid uuid.',
           price: 'Parameter: price should be valid uuid.',
           minQuantityLimit: 'Parameter: minQuantityLimit should be valid uuid.',
-          maxQuantityLimit: 'Parameter: maxQuantityLimit should be valid uuid.',
           maxDiscountLimit: 'Parameter: maxDiscountLimit should be valid uuid.',
         },
       },
       additionalProperties: false,
     },
+    isDeleted:{
+      type: 'boolean',
+    },
+    isExpired:{
+      type: 'boolean',
+    }
   },
   required: [ 'publicId', 'concurrencyStamp'],
   errorMessage: {
@@ -85,6 +86,8 @@ const update = {
       startDate: 'Parameter: startDate should be valid date format.',
       endDate: 'Parameter: endDate should be valid date format.',
       rule: 'Parameter: rule should be valid object.',
+      isDeleted: 'Parameter: isDeleted should be boolean value.',
+      isExpired: 'Parameter: isExpired should be boolean value.',
     },
   },
   additionalProperties: false,

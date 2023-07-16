@@ -1,13 +1,10 @@
-/* eslint-disable max-lines */
 const { v1: uuidV1 } = require('uuid');
 const moment = require('moment');
 const { product: ProductModel, offer: OfferModel, Sequelize: { Op }} = require('../database');
 const Helper = require('../utils/helper');
-const { OFFER_STATUS } = require('../utils/constant');
 
 const save = async (payload) => {
   const { name, sku, price } = payload;
-
   const publicId = uuidV1();
 
   try {
@@ -29,7 +26,7 @@ const save = async (payload) => {
 };
 
 const update = async (payload) => {
-const { publicId, concurrencyStamp, ...data } = payload;
+  const { publicId, concurrencyStamp, ...data } = payload;
 
   try {
     const reponse = await ProductModel.findOne({
@@ -48,11 +45,13 @@ const { publicId, concurrencyStamp, ...data } = payload;
 
     const newConcurrencyStamp = uuidV1();
 
-    await ProductModel.update(Helper.convertCamelToSnake({ ...data, concurrency_stamp: newConcurrencyStamp }),  { where: { public_id: publicId } });
+    await ProductModel.update(Helper.convertCamelToSnake({ ...data, concurrency_stamp: newConcurrencyStamp }),  
+      { where: { public_id: publicId } }
+    );
 
     return { doc: { publicId, message: 'Successfully updated.' } };
   } catch (err) {
-    return { errors: [ { name: 'save-product', message: 'Something went wrong.' } ] };
+    return { errors: [ { name: 'update-product', message: 'Something went wrong.' } ] };
   }
 };
 
@@ -69,7 +68,7 @@ const getList = async (payload) => {
         order: [ 'id', 'desc' ],
         model: OfferModel,
         attributes: [ 'public_id', 'concurrency_stamp', 'title', 'discription', 'start_date', 'end_date', 'rule', 'created_at', 'updated_at' ],
-        where: { status: OFFER_STATUS.ACTIVE },
+        where: { is_expired: false, is_deleted: false },
         required: false,
       }],
   });
@@ -100,11 +99,10 @@ const getDetailById = async (payload) => {
         order: [ 'id', 'desc' ],
         model: OfferModel,
         attributes: [ 'public_id', 'concurrency_stamp', 'title', 'discription', 'start_date', 'end_date', 'rule', 'created_at', 'updated_at' ],
-        where: { status: OFFER_STATUS.ACTIVE },
+        where: { is_expired: false, is_deleted: false },
         required: false,
       }],
   });
-
 
   if (response) {
     const { dataValues } = response;
@@ -118,13 +116,12 @@ const getDetailById = async (payload) => {
 
 const checkout = async (payload) => {
   const { products } = payload;
-
   
   try {
     let errors = [];
     let productPriceDetails = [];
+    const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
    
-
     await Promise.all(products.map(async(data)=>{
       const { productId, quantity } = data;
       let totalPrice = 0;
@@ -138,8 +135,10 @@ const checkout = async (payload) => {
             model: OfferModel,
             attributes: [ 'public_id', 'concurrency_stamp', 'title', 'discription', 'start_date', 'end_date', 'rule', 'created_at', 'updated_at' ],
             where: { 
-              start_date: { [Op.gte]: new Date()}, 
-              end_date: { [Op.gte]: new Date()},
+              start_date: { [Op.lt]: currentDateTime},
+              end_date: { [Op.gt]: currentDateTime},
+              is_expired: false, 
+              is_deleted: false ,
             },
             required: false,
           }],
@@ -161,11 +160,11 @@ const checkout = async (payload) => {
       if(offers.length > 0){
 
         const { dataValues: { rule }} = offers[0];
-        pricingRule = rule;
 
         const { price, quantity: quantityOnDiscountAvailable, maxDiscountLimit, minQuantityLimit} = rule;
         
         discountPricePerProduct = price/quantityOnDiscountAvailable;
+        pricingRule = rule;
         let totalQuantityOnDiscountNotAvailable = quantity % quantityOnDiscountAvailable;
         
         
@@ -188,7 +187,6 @@ const checkout = async (payload) => {
         name, sku, pricePerProduct: actualPrice, quantity, totalPrice: (actualPrice * quantity), 
         totalDiscountedPrice, minQuantityOnOfferAvailable, discountPricePerProduct, pricingRule
       });
-
     }))
 
     if(errors.length >0){

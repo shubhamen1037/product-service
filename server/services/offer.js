@@ -53,11 +53,11 @@ const { publicId, concurrencyStamp, ...data } = payload;
 
     const doc = Helper.convertCamelToSnake({ ...data, concurrencyStamp: newConcurrencyStamp});
 
-    await OfferModel.update(doc,  { where: { public_id: publicId } });
+    await OfferModel.update(doc, { where: { public_id: publicId } });
 
     return { doc: { publicId, message: 'Successfully updated.' } };
   } catch (err) {
-    return { errors: [ { name: 'save-offer', message: 'Something went wrong.' } ] };
+    return { errors: [ { name: 'update-offer', message: 'Something went wrong.' } ] };
   }
 };
 
@@ -68,6 +68,7 @@ const getList = async (payload) => {
     limit,
     offset,
     attributes: [ 'public_id', 'concurrency_stamp', 'title', 'discription', 'start_date', 'end_date', 'rule', 'created_at', 'updated_at' ],
+    where: { is_expired: false, is_deleted: false },
     order: [['id', 'DESC']],
     include: [{
         order: [ 'id', 'desc' ],
@@ -80,9 +81,7 @@ const getList = async (payload) => {
   if (response) {
     const { count, rows } = response;
 
-    const doc = rows.map((element) => {
-      const { dataValues } = element;
-
+    const doc = rows.map(({ dataValues }) => {
       return Helper.convertSnakeToCamel(dataValues);
     });
 
